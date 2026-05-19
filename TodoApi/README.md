@@ -56,8 +56,8 @@ Your code  ──►  docker build  ──►  Image  ──►  docker run  ─
 Place this file next to `TodoApi.csproj`:
 
 ```dockerfile
-# Base image: official .NET 8 runtime (lighter than the full SDK image)
-FROM mcr.microsoft.com/dotnet/aspnet:8.0
+# Base image: full .NET 8 SDK — needed to run "dotnet publish" during build
+FROM mcr.microsoft.com/dotnet/sdk:8.0
 
 # Set the working directory inside the container
 WORKDIR /app
@@ -69,7 +69,7 @@ COPY . .
 RUN dotnet publish -c Release -o /app/publish
 
 # Tell Docker which port the app listens on (documentation only)
-EXPOSE 80
+EXPOSE 8080
 
 # Command that runs when the container starts
 ENTRYPOINT ["dotnet", "/app/publish/TodoApi.dll"]
@@ -78,6 +78,10 @@ ENTRYPOINT ["dotnet", "/app/publish/TodoApi.dll"]
 > **Why is this "simple"?**  
 > The SDK (compiler) and the final runtime live in the same image, making it
 > large (~800 MB). Fine for learning; multi-stage (next section) fixes this.
+>
+> **Common mistake:** using `mcr.microsoft.com/dotnet/aspnet:8.0` here causes
+> the error `No .NET SDKs were found` — that image is runtime-only and has no
+> compiler. The single-stage Dockerfile **must** use `sdk:8.0`.
 
 ### Build & run
 
