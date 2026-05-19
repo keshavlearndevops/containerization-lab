@@ -6,7 +6,7 @@ from flask_cors import CORS
 app = Flask(__name__)
 CORS(app)
 
-DATA_FILE = os.environ.get("DATA_FILE", "data/todos.json")
+DATA_FILE = os.environ.get("DATA_FILE", "/app/data/todos.json")
 
 
 def load():
