@@ -1,0 +1,6 @@
+bin/
+obj/
+*.user
+.vs/
+.git/
+README.md
