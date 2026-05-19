@@ -256,6 +256,8 @@ services:
     container_name: backend
     ports:
       - "5000:5000"           # useful for direct API testing
+    volumes:
+      - todo-data:/app/data   # named volume — todos.json survives container restarts
     networks:
       - todo-net
 
@@ -271,9 +273,32 @@ services:
     networks:
       - todo-net
 
+volumes:
+  todo-data:                  # Docker manages this volume on the host automatically
+
 networks:
   todo-net:
     driver: bridge            # both containers share this network and can find each other by name
+```
+
+### What the volume does
+
+Without a volume, `todos.json` lives inside the container's writable layer.
+When you run `docker compose down` and `up` again, a fresh container starts with no data.
+
+With the named volume `todo-data` mounted at `/app/data`, Docker stores that folder on the host.
+The file survives container restarts, rebuilds, and `docker compose down` (but not `docker compose down -v`).
+
+```
+host (Docker-managed)          container
+/var/lib/docker/volumes/       /app/data/todos.json
+  todo-data/_data/  ◀────────▶
+    todos.json
+```
+
+To wipe all saved todos and start fresh:
+```bash
+docker compose down -v    # -v also deletes named volumes
 ```
 
 ### How the two services talk to each other
