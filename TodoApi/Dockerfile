@@ -1,25 +1,17 @@
-# ══════════════════════════════════════════════════════════════════
-# STAGE 1 — Build
-# ══════════════════════════════════════════════════════════════════
-FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+# Base image: full .NET 8 SDK — needed to run "dotnet publish" during build
+FROM mcr.microsoft.com/dotnet/sdk:8.0
 
-WORKDIR /src
-
-COPY ["TodoApi.csproj", "."]
-RUN dotnet restore
-
-COPY . .
-RUN dotnet publish -c Release -o /app/publish --no-restore
-
-# ══════════════════════════════════════════════════════════════════
-# STAGE 2 — Final (runtime only, ~200 MB)
-# ══════════════════════════════════════════════════════════════════
-FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS final
-
+# Set the working directory inside the container
 WORKDIR /app
 
-COPY --from=build /app/publish .
+# Copy everything from your machine into /app inside the image
+COPY . .
 
+# Restore NuGet packages and publish a Release build into /app/publish
+RUN dotnet publish -c Release -o /app/publish
+
+# Tell Docker which port the app listens on (documentation only)
 EXPOSE 8080
 
-ENTRYPOINT ["dotnet", "TodoApi.dll"]
+# Command that runs when the container starts
+ENTRYPOINT ["dotnet", "/app/publish/TodoApi.dll"]
